@@ -32,6 +32,7 @@ export default function App() {
   const [selectedOcc,  setSelectedOcc]  = useState<ChoreOccurrence | null>(null);
   const [choreForm,    setChoreForm]    = useState<{
     open: boolean; chore?: Chore; initialDate?: string;
+    initialStartTime?: string; initialEndTime?: string;
   }>({ open: false });
   const [historyChore, setHistoryChore] = useState<Chore | null>(null);
 
@@ -116,8 +117,8 @@ export default function App() {
   const handleRangeChange = (from: string, to: string) =>
     setDateRange({ from, to });
 
-  const handleSelectSlot = (date: string) =>
-    setChoreForm({ open: true, initialDate: date });
+  const handleSelectSlot = (date: string, startTime?: string, endTime?: string) =>
+    setChoreForm({ open: true, initialDate: date, initialStartTime: startTime, initialEndTime: endTime });
 
   const handleSelectEvent = (occ: ChoreOccurrence) => setSelectedOcc(occ);
 
@@ -164,6 +165,8 @@ export default function App() {
         <ChoreForm
           chore={choreForm.chore}
           initialDate={choreForm.initialDate}
+          initialStartTime={choreForm.initialStartTime}
+          initialEndTime={choreForm.initialEndTime}
           members={members}
           onSave={handleSaveChore}
           onClose={() => setChoreForm({ open: false })}

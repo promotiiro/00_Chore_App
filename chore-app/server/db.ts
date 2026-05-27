@@ -43,4 +43,10 @@ db.exec(`
   );
 `);
 
+// Migrations: add time columns to databases created before this change.
+// SQLite does not support IF NOT EXISTS on ALTER TABLE, so we swallow the
+// "duplicate column" error that fires when the column already exists.
+try { db.exec('ALTER TABLE chores ADD COLUMN start_time TEXT'); } catch (_) { /* already exists */ }
+try { db.exec('ALTER TABLE chores ADD COLUMN end_time TEXT'); }   catch (_) { /* already exists */ }
+
 export default db;

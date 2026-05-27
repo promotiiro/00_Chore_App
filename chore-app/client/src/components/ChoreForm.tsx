@@ -5,6 +5,8 @@ import type { Chore, Member, RecurrenceType } from '@shared/types';
 interface Props {
   chore?: Chore;              // present → edit mode
   initialDate?: string;       // pre-fill start date when creating from calendar click
+  initialStartTime?: string;  // pre-fill start time (HH:mm) from week/day slot click
+  initialEndTime?: string;    // pre-fill end time (HH:mm) from week/day slot click
   members: Member[];
   onSave: (data: Omit<Chore, 'id' | 'created_at'>) => void;
   onClose: () => void;
@@ -18,12 +20,19 @@ interface FormState {
   assigned_to: string;
   start_date: string;
   end_date: string;
+  start_time: string;
+  end_time: string;
   recurrence_type: RecurrenceType;
   recurrence_interval: number;
   recurrence_days: number[];
 }
 
-function buildDefault(chore?: Chore, initialDate?: string): FormState {
+function buildDefault(
+  chore?: Chore,
+  initialDate?: string,
+  initialStartTime?: string,
+  initialEndTime?: string,
+): FormState {
   if (chore) {
     return {
       title: chore.title,
@@ -31,6 +40,8 @@ function buildDefault(chore?: Chore, initialDate?: string): FormState {
       assigned_to: chore.assigned_to?.toString() ?? '',
       start_date: chore.start_date,
       end_date: chore.end_date ?? '',
+      start_time: chore.start_time ?? '',
+      end_time: chore.end_time ?? '',
       recurrence_type: chore.recurrence_type,
       recurrence_interval: chore.recurrence_interval ?? 7,
       recurrence_days: chore.recurrence_days ?? [],
@@ -42,18 +53,20 @@ function buildDefault(chore?: Chore, initialDate?: string): FormState {
     assigned_to: '',
     start_date: initialDate ?? format(new Date(), 'yyyy-MM-dd'),
     end_date: '',
+    start_time: initialStartTime ?? '',
+    end_time: initialEndTime ?? '',
     recurrence_type: 'none',
     recurrence_interval: 7,
     recurrence_days: [1, 2, 3, 4, 5], // Mon–Fri default for weekly
   };
 }
 
-export default function ChoreForm({ chore, initialDate, members, onSave, onClose }: Props) {
-  const [form, setForm] = useState<FormState>(() => buildDefault(chore, initialDate));
+export default function ChoreForm({ chore, initialDate, initialStartTime, initialEndTime, members, onSave, onClose }: Props) {
+  const [form, setForm] = useState<FormState>(() => buildDefault(chore, initialDate, initialStartTime, initialEndTime));
 
   useEffect(() => {
-    setForm(buildDefault(chore, initialDate));
-  }, [chore, initialDate]);
+    setForm(buildDefault(chore, initialDate, initialStartTime, initialEndTime));
+  }, [chore, initialDate, initialStartTime, initialEndTime]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -80,6 +93,8 @@ export default function ChoreForm({ chore, initialDate, members, onSave, onClose
       assigned_to: form.assigned_to ? Number(form.assigned_to) : null,
       start_date: form.start_date,
       end_date: form.end_date || null,
+      start_time: form.start_time || null,
+      end_time: form.end_time || null,
       recurrence_type: form.recurrence_type,
       recurrence_interval: form.recurrence_interval,
       recurrence_days:
@@ -157,6 +172,28 @@ export default function ChoreForm({ chore, initialDate, members, onSave, onClose
               value={form.end_date}
               min={form.start_date}
               onChange={(e) => set('end_date', e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Times */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-group">
+            <label className="form-label">Start Time</label>
+            <input
+              type="time"
+              className="form-control"
+              value={form.start_time}
+              onChange={(e) => set('start_time', e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">End Time</label>
+            <input
+              type="time"
+              className="form-control"
+              value={form.end_time}
+              onChange={(e) => set('end_time', e.target.value)}
             />
           </div>
         </div>
