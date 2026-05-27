@@ -32,7 +32,7 @@ interface CalEvent {
 interface Props {
   occurrences: ChoreOccurrence[];
   onSelectEvent: (occurrence: ChoreOccurrence) => void;
-  onSelectSlot: (date: string) => void;
+  onSelectSlot: (date: string, startTime?: string, endTime?: string) => void;
   onRangeChange: (from: string, to: string) => void;
 }
 
@@ -47,13 +47,35 @@ export default function CalendarView({
       occurrences.map((occ) => {
         // parse the ISO date safely at midnight local time
         const [y, mo, d] = occ.date.split('-').map(Number);
-        const day = new Date(y, mo - 1, d);
+        const { start_time, end_time } = occ.chore;
+
+        let start: Date;
+        let end: Date;
+        let allDay: boolean;
+
+        if (start_time) {
+          const [sh, sm] = start_time.split(':').map(Number);
+          start = new Date(y, mo - 1, d, sh, sm);
+          if (end_time) {
+            const [eh, em] = end_time.split(':').map(Number);
+            end = new Date(y, mo - 1, d, eh, em);
+          } else {
+            // default: 1-hour duration when only start_time is set
+            end = new Date(y, mo - 1, d, sh + 1, sm);
+          }
+          allDay = false;
+        } else {
+          start = new Date(y, mo - 1, d);
+          end   = new Date(y, mo - 1, d);
+          allDay = true;
+        }
+
         return {
           id: `${occ.chore.id}-${occ.date}`,
           title: occ.chore.title,
-          start: day,
-          end: day,
-          allDay: true,
+          start,
+          end,
+          allDay,
           resource: occ,
         };
       }),
@@ -88,7 +110,15 @@ export default function CalendarView({
   };
 
   const handleSelectSlot = (slot: SlotInfo) => {
-    onSelectSlot(format(slot.start, 'yyyy-MM-dd'));
+    const date = format(slot.start, 'yyyy-MM-dd');
+    // Only forward a time when the slot has a specific time (week/day view).
+    // Month-view day clicks land at midnight (00:00), so we skip them.
+    const hasTime = slot.start.getHours() !== 0 || slot.start.getMinutes() !== 0;
+    if (hasTime) {
+      onSelectSlot(date, format(slot.start, 'HH:mm'), format(slot.end, 'HH:mm'));
+    } else {
+      onSelectSlot(date);
+    }
   };
 
   return (
