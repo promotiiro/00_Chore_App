@@ -17,6 +17,8 @@ export interface Chore {
   recurrence_type: RecurrenceType;
   recurrence_interval: number;
   recurrence_days?: number[] | null; // 0=Sun … 6=Sat, used by 'weekly'
+  start_time?: string | null;        // HH:mm, optional
+  end_time?: string | null;          // HH:mm, optional
   created_at?: string;
 }
 

@@ -85,8 +85,9 @@ router.post('/', (req: Request, res: Response) => {
     .prepare(
       `INSERT INTO chores
          (title, description, assigned_to, start_date, end_date,
-          recurrence_type, recurrence_interval, recurrence_days)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+          recurrence_type, recurrence_interval, recurrence_days,
+          start_time, end_time)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       b.title.trim(),
@@ -96,7 +97,9 @@ router.post('/', (req: Request, res: Response) => {
       b.end_date ?? null,
       b.recurrence_type ?? 'none',
       b.recurrence_interval ?? 1,
-      b.recurrence_days ? JSON.stringify(b.recurrence_days) : null
+      b.recurrence_days ? JSON.stringify(b.recurrence_days) : null,
+      b.start_time ?? null,
+      b.end_time ?? null
     );
 
   const row = db
@@ -122,7 +125,8 @@ router.put('/:id', (req: Request, res: Response) => {
     `UPDATE chores SET
        title = ?, description = ?, assigned_to = ?,
        start_date = ?, end_date = ?,
-       recurrence_type = ?, recurrence_interval = ?, recurrence_days = ?
+       recurrence_type = ?, recurrence_interval = ?, recurrence_days = ?,
+       start_time = ?, end_time = ?
      WHERE id = ?`
   ).run(
     b.title.trim(),
@@ -133,6 +137,8 @@ router.put('/:id', (req: Request, res: Response) => {
     b.recurrence_type ?? 'none',
     b.recurrence_interval ?? 1,
     b.recurrence_days ? JSON.stringify(b.recurrence_days) : null,
+    b.start_time ?? null,
+    b.end_time ?? null,
     id
   );
 
